@@ -1,45 +1,87 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+//import { createStackNavigator } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+// Import screens
+import HomeScreen from '../../components/HomeScreen';
+// import ScanScreen from '../screens/ScanScreen';
+// import UtilitiesScreen from '../screens/UtilitiesScreen';
+// import ResellScreen from '../screens/ResellScreen';
+// import LeaderboardScreen from '../screens/LeaderboardScreen';
+// import ProfileScreen from '../screens/ProfileScreen';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+const Tab = createBottomTabNavigator();
+// const Stack = createStackNavigator();
 
+const AppNavigator = () => {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={{
+          tabBarStyle: {
+            backgroundColor: '#ffffff',
+            borderTopWidth: 0,
+            elevation: 10,
+            height: 60,
           },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarActiveTintColor: '#2ecc71',
+          tabBarInactiveTintColor: '#95a5a6',
         }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="home" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Scan"
+          //component={ScanScreen}
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="qrcode-scan" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Utilities"
+          //component={UtilitiesScreen}
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="lightning-bolt" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Resell"
+          //component={ResellScreen}
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="store" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Leaderboard"
+          //component={LeaderboardScreen}
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="trophy" size={26} color={color} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
-}
+};
+
+export default AppNavigator; 

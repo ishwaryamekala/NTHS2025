@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --eco-grass-green: #4CAF50;
+            --eco-light-green: #81C784;
+            --eco-pale-green: rgba(76, 175, 80, 0.2);
+            --eco-gradient: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+        }
+        .eco-score {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 15px solid var(--eco-grass-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 20px auto;
+            transition: all 0.3s ease;
+        }
+        .eco-score:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+        }
+        .nav-link.active {
+            background-color: var(--eco-grass-green) !important;
+            color: white !important;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .text-success {
+            color: var(--eco-grass-green) !important;
+        }
+        .btn-success {
+            background-color: var(--eco-grass-green) !important;
+            border-color: var(--eco-grass-green) !important;
+        }
+        .sustainability-score {
+            background-color: var(--eco-pale-green);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: var(--eco-grass-green);
+        }
+        .hover-shadow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+            transition: all 0.3s ease;
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, var(--eco-pale-green) 0%, #ffffff 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .gradient-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.25);
+        }
+        .stat-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--eco-pale-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+        .stat-circle:hover {
+            transform: scale(1.1);
+            background: rgba(76, 175, 80, 0.3);
+        }
+        .eco-badge {
+            background: var(--eco-gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+        }
+        .bg-success {
+            background-color: var(--eco-grass-green) !important;
+        }
+        .chart-container {
+            min-height: 400px;
+            width: 100%;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function App() {
+            const [activeTab, setActiveTab] = React.useState('home');
+
+            const renderContent = () => {
+                switch(activeTab) {
+                    case 'home':
+                        return <HomeScreen setActiveTab={setActiveTab} />;
+                    case 'scan':
+                        return <ScanScreen />;
+                    case 'utilities':
+                        return <UtilitiesScreen />;
+                    case 'resell':
+                        return <ResellScreen />;
+                    case 'chatbot':
+                        return <ChatbotScreen />;
+                    case 'dashboard':
+                        return <DashboardScreen />;
+                    case 'full-dashboard':
+                        return <FullDashboardScreen />;
+                    default:
+                        return <HomeScreen setActiveTab={setActiveTab} />;
+                }
+            };
+
+            return (
+                <div className="container-fluid p-0">
+                    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                        <div className="container">
+                            <span className="navbar-brand">EcoTracker</span>
+                        </div>
+                    </nav>
+                    
+                    {renderContent()}
+
+                    <nav className="fixed-bottom bg-white border-top">
+                        <div className="row text-center py-2">
+                            <div className="col" onClick={() => setActiveTab('home')}>
+                                <i className={`fas fa-home ${activeTab === 'home' ? 'text-success' : 'text-secondary'}`}></i>
+                                <div className="small">Home</div>
+                            </div>
+                            <div className="col" onClick={() => setActiveTab('scan')}>
+                                <i className={`fas fa-camera ${activeTab === 'scan' ? 'text-success' : 'text-secondary'}`}></i>
+                                <div className="small">Scan</div>
+                            </div>
+                            <div className="col" onClick={() => setActiveTab('utilities')}>
+                                <i className={`fas fa-bolt ${activeTab === 'utilities' ? 'text-success' : 'text-secondary'}`}></i>
+                                <div className="small">Utilities</div>
+                            </div>
+                            <div className="col" onClick={() => setActiveTab('resell')}>
+                                <i className={`fas fa-store ${activeTab === 'resell' ? 'text-success' : 'text-secondary'}`}></i>
+                                <div className="small">Resell</div>
+                            </div>
+                            <div className="col" onClick={() => setActiveTab('chatbot')}>
+                                <i className={`fas fa-robot ${activeTab === 'chatbot' ? 'text-success' : 'text-secondary'}`}></i>
+                                <div className="small">EcoBot</div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            );
+        }
+
+        function HomeScreen({ setActiveTab }) {
+            return (
+                <div className="container py-4">
+                    <div className="eco-score">
+                        <h2 className="display-4 mb-0">75</h2>
+                        <div className="text-muted">Eco Score</div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">Monthly Impact</h5>
+                            <div className="row text-center">
+                                <div className="col-6">
+                                    <i className="fas fa-car text-success mb-2"></i>
+                                    <div className="h5">75.5 kg CO₂</div>
+                                    <div className="text-muted small">= 300 miles driving</div>
+                                </div>
+                                <div className="col-6">
+                                    <i className="fas fa-bolt text-warning mb-2"></i>
+                                    <div className="h5">54.2 kWh</div>
+                                    <div className="text-muted small">Energy Used</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body text-center">
+                            <button className="btn btn-success btn-lg w-100" onClick={() => setActiveTab('dashboard')}>
+                                <i className="fas fa-chart-line me-2"></i>
+                                View Sustainability Dashboard
+                            </button>
+                        </div>
+                    </div>
+
+                    <h5 className="mb-3">Leaderboard</h5>
+                    <div className="card mb-4">
+                        <div className="list-group list-group-flush">
+                            <div className="list-group-item">
+                                <div className="d-flex align-items-center">
+                                    <div className="h5 mb-0 me-3">1</div>
+                                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop" className="rounded-circle me-3" style={{objectFit: 'cover', width: '40px', height: '40px'}} />
+                                    <div className="flex-grow-1">
+                                        <h6 className="mb-0">Sarah Johnson</h6>
+                                        <div className="text-muted small">
+                                            <i className="fas fa-leaf text-success"></i>
+                                            <i className="fas fa-bolt text-success mx-1"></i>
+                                            <i className="fas fa-recycle text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div className="text-success h5 mb-0">125,847</div>
+                                </div>
+                            </div>
+                            <div className="list-group-item">
+                                <div className="d-flex align-items-center">
+                                    <div className="h5 mb-0 me-3">2</div>
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop" className="rounded-circle me-3" style={{objectFit: 'cover', width: '40px', height: '40px'}} />
+                                    <div className="flex-grow-1">
+                                        <h6 className="mb-0">Michael Chen</h6>
+                                        <div className="text-muted small">
+                                            <i className="fas fa-leaf text-success"></i>
+                                            <i className="fas fa-bolt text-success mx-1"></i>
+                                        </div>
+                                    </div>
+                                    <div className="text-success h5 mb-0">98,234</div>
+                                </div>
+                            </div>
+                            <div className="list-group-item">
+                                <div className="d-flex align-items-center">
+                                    <div className="h5 mb-0 me-3">3</div>
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop" className="rounded-circle me-3" style={{objectFit: 'cover', width: '40px', height: '40px'}} />
+                                    <div className="flex-grow-1">
+                                        <h6 className="mb-0">Emily Rodriguez</h6>
+                                        <div className="text-muted small">
+                                            <i className="fas fa-leaf text-success"></i>
+                                            <i className="fas fa-recycle text-success mx-1"></i>
+                                        </div>
+                                    </div>
+                                    <div className="text-success h5 mb-0">45,129</div>
+                                </div>
+                            </div>
+                            <div className="list-group-item bg-light">
+                                <div className="d-flex align-items-center">
+                                    <div className="h5 mb-0 me-3">4</div>
+                                    <div className="rounded-circle me-3 bg-success d-flex align-items-center justify-content-center" style={{width: '40px', height: '40px'}}>
+                                        <i className="fas fa-user text-white"></i>
+                                    </div>
+                                    <div className="flex-grow-1">
+                                        <h6 className="mb-0">You</h6>
+                                        <div className="text-muted small">
+                                            <i className="fas fa-leaf text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div className="text-success h5 mb-0">38,392</div>
+                                </div>
+                            </div>
+                            <div className="list-group-item">
+                                <div className="d-flex align-items-center">
+                                    <div className="h5 mb-0 me-3">5</div>
+                                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop" className="rounded-circle me-3" style={{objectFit: 'cover', width: '40px', height: '40px'}} />
+                                    <div className="flex-grow-1">
+                                        <h6 className="mb-0">Alex Thompson</h6>
+                                        <div className="text-muted small">
+                                            <i className="fas fa-leaf text-success"></i>
+                                        </div>
+                                    </div>
+                                    <div className="text-success h5 mb-0">32,756</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 className="mb-3">Quick Actions</h5>
+                    <div className="row g-3">
+                        <div className="col-6">
+                            <div className="card">
+                                <div className="card-body text-center">
+                                    <i className="fas fa-camera text-success mb-2"></i>
+                                    <div>Scan Item</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-6">
+                            <div className="card">
+                                <div className="card-body text-center">
+                                    <i className="fas fa-file-alt text-success mb-2"></i>
+                                    <div>Add Bill</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-6">
+                            <div className="card">
+                                <div className="card-body text-center">
+                                    <i className="fas fa-recycle text-success mb-2"></i>
+                                    <div>Disposal Guide</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-6">
+                            <div className="card">
+                                <div className="card-body text-center">
+                                    <i className="fas fa-store text-success mb-2"></i>
+                                    <div>Resell Item</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ScanScreen() {
+            return (
+                <div className="container py-4">
+                    <div className="text-center mb-4">
+                        <div className="border border-success rounded p-4 mb-3" style={{height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                            <i className="fas fa-camera fa-3x text-success"></i>
+                        </div>
+                        <button className="btn btn-success">Scan Item</button>
+                    </div>
+                </div>
+            );
+        }
+
+        function UtilitiesScreen() {
+            return (
+                <div className="container py-4">
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">Monthly Usage</h5>
+                            <div className="form-group mb-3">
+                                <label>Enter Your Monthly Bill</label>
+                                <input type="number" className="form-control" placeholder="Enter amount" />
+                            </div>
+                            <button className="btn btn-success w-100">Analyze Bill</button>
+                        </div>
+                    </div>
+
+                    <div className="card mb-4">
+                        <div className="card-body">
+                            <h5 className="card-title">Appliance Usage</h5>
+                            <div className="list-group list-group-flush">
+                                <div className="list-group-item">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6>Air Conditioner</h6>
+                                            <small className="text-muted">240 kWh - $28.80</small>
+                                        </div>
+                                        <span className="badge bg-danger">High Usage</span>
+                                    </div>
+                                </div>
+                                <div className="list-group-item">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6>Refrigerator</h6>
+                                            <small className="text-muted">150 kWh - $18.00</small>
+                                        </div>
+                                        <span className="badge bg-warning">Normal</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ResellScreen() {
+            return (
+                <div className="container py-4">
+                    <div className="mb-4">
+                        <button className="btn btn-success w-100">+ List New Item</button>
+                    </div>
+
+                    <div className="card mb-3">
+                        <img src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=200&fit=crop" className="card-img-top" alt="iPhone 11 Pro" style={{objectFit: 'cover', height: '200px'}} />
+                        <div className="card-body">
+                            <div className="d-flex justify-content-between align-items-start">
+                                <h5 className="card-title">iPhone 11 Pro</h5>
+                                <div className="sustainability-score">
+                                    <i className="fas fa-leaf"></i> 85
+                                </div>
+                            </div>
+                            <p className="card-text text-success h5">$399</p>
+                            <p className="card-text"><small className="text-muted"><del>$999</del></small></p>
+                            <p className="card-text">Used for 2 years, perfect working condition</p>
+                            <button className="btn btn-success w-100">Contact Seller</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ChatbotScreen() {
+            const [messages, setMessages] = React.useState([
+                { text: "Hi! I'm EcoBot. How can I help you be more sustainable today?", isBot: true }
+            ]);
+            const [input, setInput] = React.useState('');
+
+            const handleSend = () => {
+                if (input.trim()) {
+                    setMessages([...messages, { text: input, isBot: false }]);
+                    // Simulate bot response
+                    setTimeout(() => {
+                        setMessages(prev => [...prev, {
+                            text: "Thanks for your message! I'm here to help with eco-friendly tips and sustainability advice.",
+                            isBot: true
+                        }]);
+                    }, 1000);
+                    setInput('');
+                }
+            };
+
+            return (
+                <div className="container py-4">
+                    <div className="card" style={{height: 'calc(100vh - 150px)'}}>
+                        <div className="card-body d-flex flex-column">
+                            <div className="flex-grow-1 overflow-auto mb-4">
+                                {messages.map((message, index) => (
+                                    <div key={index} className={`d-flex ${message.isBot ? 'justify-content-start' : 'justify-content-end'} mb-3`}>
+                                        {message.isBot && (
+                                            <div className="rounded-circle bg-success d-flex align-items-center justify-content-center me-2" style={{width: '32px', height: '32px', flexShrink: 0}}>
+                                                <i className="fas fa-robot text-white" style={{fontSize: '16px'}}></i>
+                                            </div>
+                                        )}
+                                        <div className={`card ${message.isBot ? 'bg-light' : 'bg-success text-white'}`} style={{maxWidth: '75%'}}>
+                                            <div className="card-body py-2 px-3">
+                                                <p className="mb-0">{message.text}</p>
+                                            </div>
+                                        </div>
+                                        {!message.isBot && (
+                                            <div className="rounded-circle bg-secondary d-flex align-items-center justify-content-center ms-2" style={{width: '32px', height: '32px', flexShrink: 0}}>
+                                                <i className="fas fa-user text-white" style={{fontSize: '16px'}}></i>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="input-group">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Ask about sustainability..."
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                />
+                                <button className="btn btn-success" onClick={handleSend}>
+                                    <i className="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function DashboardScreen() {
+            return (
+                <div className="container py-4">
+                    <div className="text-center mb-4">
+                        <h4 className="display-6 fw-bold text-success mb-1">Your Sustainability Impact</h4>
+                        <p className="text-muted">Track your environmental contributions</p>
+                    </div>
+                    
+                    <div className="card mb-4 border-0 bg-light">
+                        <div className="card-body text-center p-5">
+                            <div className="eco-score mb-3" style={{
+                                width: '220px',
+                                height: '220px',
+                                borderWidth: '18px',
+                                boxShadow: '0 4px 15px rgba(46, 204, 113, 0.2)'
+                            }}>
+                                <h2 className="display-3 mb-0 fw-bold">75</h2>
+                                <div className="text-muted">Eco Score</div>
+                            </div>
+                            <p className="text-success mt-3 mb-0">
+                                <i className="fas fa-arrow-up me-1"></i>
+                                12% improvement from last month
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="row g-4">
+                        <div className="col-4">
+                            <div className="card h-100 border-0 bg-light hover-shadow">
+                                <div className="card-body text-center p-4">
+                                    <div className="rounded-circle bg-success bg-opacity-10 p-3 mb-3 mx-auto" style={{width: '60px', height: '60px'}}>
+                                        <i className="fas fa-recycle text-success fa-2x"></i>
+                                    </div>
+                                    <h3 className="h2 mb-2">156</h3>
+                                    <div className="text-muted">Items Recycled</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-4">
+                            <div className="card h-100 border-0 bg-light hover-shadow">
+                                <div className="card-body text-center p-4">
+                                    <div className="rounded-circle bg-success bg-opacity-10 p-3 mb-3 mx-auto" style={{width: '60px', height: '60px'}}>
+                                        <i className="fas fa-cloud text-success fa-2x"></i>
+                                    </div>
+                                    <h3 className="h2 mb-2">325<small>kg</small></h3>
+                                    <div className="text-muted">Carbon Saved</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-4">
+                            <div className="card h-100 border-0 bg-light hover-shadow">
+                                <div className="card-body text-center p-4">
+                                    <div className="rounded-circle bg-success bg-opacity-10 p-3 mb-3 mx-auto" style={{width: '60px', height: '60px'}}>
+                                        <i className="fas fa-bolt text-success fa-2x"></i>
+                                    </div>
+                                    <h3 className="h2 mb-2">482<small>kWh</small></h3>
+                                    <div className="text-muted">Energy Saved</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function FullDashboardScreen({ setActiveTab }) {
+            React.useEffect(() => {
+                const initializeCharts = async () => {
+                    // Wait for DOM to be ready
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    try {
+                        // Carbon Footprint Line Graph
+                        const carbonCtx = document.getElementById('carbonFootprintGraph').getContext('2d');
+                        if (window.carbonChart) {
+                            window.carbonChart.destroy();
+                        }
+                        window.carbonChart = new Chart(carbonCtx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'Carbon Footprint',
+                                    data: [85, 78, 72, 68, 62, 58],
+                                    borderColor: '#4CAF50',
+                                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                    fill: true,
+                                    tension: 0.4,
+                                    borderWidth: 2,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: '#4CAF50'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Monthly Carbon Footprint (kg CO₂)',
+                                        color: '#4CAF50',
+                                        font: { size: 16, weight: 'bold' }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: 'rgba(76, 175, 80, 0.1)'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        // Energy Usage Bar Graph
+                        const energyCtx = document.getElementById('energyUsageGraph').getContext('2d');
+                        if (window.energyChart) {
+                            window.energyChart.destroy();
+                        }
+                        window.energyChart = new Chart(energyCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'Energy Usage',
+                                    data: [420, 380, 350, 310, 280, 250],
+                                    backgroundColor: '#81C784',
+                                    borderRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Monthly Energy Usage (kWh)',
+                                        color: '#4CAF50',
+                                        font: { size: 16, weight: 'bold' }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: 'rgba(76, 175, 80, 0.1)'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error initializing charts:', error);
+                    }
+                };
+
+                initializeCharts();
+
+                // Cleanup on component unmount
+                return () => {
+                    if (window.carbonChart) {
+                        window.carbonChart.destroy();
+                    }
+                    if (window.energyChart) {
+                        window.energyChart.destroy();
+                    }
+                };
+            }, []);
+
+            return (
+                <div className="container py-4">
+                    <div className="text-center mb-4">
+                        <h4 className="display-6 fw-bold text-success mb-1">Sustainability Analytics</h4>
+                        <p className="text-muted">Your Environmental Impact</p>
+                    </div>
+
+                    <div className="row g-4">
+                        {/* Carbon Footprint Graph */}
+                        <div className="col-12">
+                            <div className="card gradient-card">
+                                <div className="card-body p-4">
+                                    <div style={{ position: 'relative', height: '400px', width: '100%' }}>
+                                        <canvas id="carbonFootprintGraph"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Energy Usage Graph */}
+                        <div className="col-12">
+                            <div className="card gradient-card">
+                                <div className="card-body p-4">
+                                    <div style={{ position: 'relative', height: '400px', width: '100%' }}>
+                                        <canvas id="energyUsageGraph"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Summary Cards */}
+                        <div className="col-md-6">
+                            <div className="card gradient-card">
+                                <div className="card-body p-4">
+                                    <h5 className="mb-3">Carbon Footprint Summary</h5>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p className="mb-0">Current Month</p>
+                                            <h3 className="text-success">58 kg CO₂</h3>
+                                        </div>
+                                        <div className="text-end">
+                                            <p className="mb-0 text-success">
+                                                <i className="fas fa-arrow-down me-1"></i>
+                                                31.8% reduction
+                                            </p>
+                                            <small className="text-muted">vs. January</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-md-6">
+                            <div className="card gradient-card">
+                                <div className="card-body p-4">
+                                    <h5 className="mb-3">Energy Usage Summary</h5>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p className="mb-0">Current Month</p>
+                                            <h3 className="text-success">250 kWh</h3>
+                                        </div>
+                                        <div className="text-end">
+                                            <p className="mb-0 text-success">
+                                                <i className="fas fa-arrow-down me-1"></i>
+                                                40.5% reduction
+                                            </p>
+                                            <small className="text-muted">vs. January</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html> 
