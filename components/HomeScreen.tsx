@@ -85,7 +85,7 @@ export default function HomeScreen({ navigation }: any) {
       <View style={styles.actionsContainer}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionGrid}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate("Recycle")}>
             <Icon name="recycle" size={30} color="#2ecc71" />
             <Text style={styles.actionText}>Recycle</Text>
           </TouchableOpacity>
@@ -100,7 +100,7 @@ export default function HomeScreen({ navigation }: any) {
             <Icon name="qrcode-scan" size={30} color="#2ecc71" />
             <Text style={styles.actionText}>Chat with EcoBot!</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate("ResellItems")}>
             <Icon name="store" size={30} color="#2ecc71" />
             <Text style={styles.actionText}>Resell Items</Text>
           </TouchableOpacity>
