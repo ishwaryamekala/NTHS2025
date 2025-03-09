@@ -7,6 +7,9 @@ import HomeScreen from "../../components/HomeScreen"; // Ensure this exists or u
 import UtilityBill from "@/components/UtilityBill";
 import ResellItems from "../../components/ResellItems";
 import Recycle from "../../components/Recycle";
+import ItemDetails from "../../components/ItemDetails";
+import PostItem from "../../components/PostItem";
+import ChatBot from "../../components/ChatBot";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +22,9 @@ function App() {
         <Stack.Screen name="UtilityBill" component={UtilityBill}/>
         <Stack.Screen name="ResellItems" component={ResellItems}/>
         <Stack.Screen name="Recycle" component={Recycle}/>
+        <Stack.Screen name="ItemDetails" component={ItemDetails} />
+        <Stack.Screen name="PostItem" component={PostItem} />
+        <Stack.Screen name="ChatBot" component={ChatBot} />
       </Stack.Navigator>
     </NavigationContainer>
   );

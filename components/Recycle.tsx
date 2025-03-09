@@ -1,8 +1,51 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Alert, Linking, StyleSheet, Modal, AppState } from "react-native";
+import { auth, db } from "../firebaseConfig";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function Recycle({ navigation }: any) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    // Detect when the user returns from Google Maps
+    const appStateListener = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        setModalVisible(true); // Show modal when user returns
+      }
+    });
+
+    return () => appStateListener.remove(); // Cleanup listener
+  }, []);
+
+  const openGoogleMaps = () => {
+    const utdLat = 32.9858;
+    const utdLng = -96.7501;
+    const mapsUrl = `https://www.google.com/maps/search/Recycling+Centers/@${utdLat},${utdLng},14z`;
+
+    Linking.openURL(mapsUrl); // Redirect to Google Maps
+  };
+
+  const handleRecycled = async (didRecycle: boolean) => {
+    setModalVisible(false); // Close modal
+
+    if (didRecycle) {
+      try {
+        const userRef = doc(db, "users", auth.currentUser?.uid || "");
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const currentEcoScore = userDoc.data().ecoScore || 0;
+          await updateDoc(userRef, { ecoScore: currentEcoScore + 10 });
+
+          Alert.alert("Success!", "You've earned +10 EcoScore! 🌱");
+        }
+      } catch (error) {
+        console.error("Error updating EcoScore:", error);
+      }
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Recycling Guide</Text>
@@ -28,9 +71,26 @@ export default function Recycle({ navigation }: any) {
       </View>
 
       {/* Button to Find Recycling Centers */}
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={openGoogleMaps}>
         <Text style={styles.buttonText}>Find Nearby Recycling Centers</Text>
       </TouchableOpacity>
+
+      {/* Pop-Up Modal for Confirmation (After Returning from Maps) */}
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Did you recycle?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => handleRecycled(true)}>
+                <Text style={styles.modalButtonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.noButton]} onPress={() => handleRecycled(false)}>
+                <Text style={styles.modalButtonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -80,6 +140,48 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: 300,
+    backgroundColor: "#F8FFF5",
+    padding: 20,
+    borderRadius: 15,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#4C9A2A",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2F6031",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    backgroundColor: "#2F6031",
+    padding: 10,
+    marginHorizontal: 5,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  noButton: {
+    backgroundColor: "#D9534F",
+  },
+  modalButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",

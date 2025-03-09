@@ -66,34 +66,35 @@ export default function UtilityBill() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Upload Your Utility Bill</Text>
+      <Text style={styles.subtitle}>
+        Analyze your electricity and water usage to calculate your environmental impact.
+      </Text>
 
-      <View style={{ alignItems: "center", marginTop: 15 }}>
+      <View style={styles.card}>
         <TouchableOpacity style={styles.button} onPress={pickDocument}>
-          <Text style={styles.buttonText}>Select PDF</Text>
+          <Text style={styles.buttonText}>📄 Select PDF</Text>
         </TouchableOpacity>
-      </View>
 
-      {selectedFile && (
-        <View style={{ alignItems: "center", marginTop: 10 }}>
+        {selectedFile && (
           <TouchableOpacity style={styles.button} onPress={uploadDocument}>
             <Text style={styles.buttonText}>Analyze</Text>
           </TouchableOpacity>
-        </View>
-      )}
+        )}
 
-      {loading && <ActivityIndicator size="large" color="#6a9c7f" style={styles.loading} />}
+        {loading && <ActivityIndicator size="large" color="#2F6031" style={styles.loading} />}
+      </View>
 
       {ecoScore !== null && (
         <View style={styles.resultContainer}>
-          <Text style={styles.resultTitle}>Analysis Results</Text>
+          <Text style={styles.resultTitle}>Results</Text>
 
           <View style={styles.resultCard}>
-            <Text style={styles.resultLabel}>🌿 Eco Score:</Text>
+            <Text style={styles.resultLabel}>Eco Score:</Text>
             <Text style={styles.resultValue}>{ecoScore}/20</Text>
           </View>
 
           <View style={styles.resultCard}>
-            <Text style={styles.resultLabel}>🌍 Carbon Footprint:</Text>
+            <Text style={styles.resultLabel}>Carbon Footprint:</Text>
             <Text style={styles.resultValue}>{carbonFootprint} kg CO₂</Text>
           </View>
 
@@ -116,26 +117,42 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 25,
     justifyContent: "center",
-    backgroundColor: "#f4f7f5", // Soft pastel green-gray background
+    backgroundColor: "#F4FAF1", // Light green eco-friendly background
   },
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#2c3e50", // Deep gray-blue for contrast
+    color: "#2F6031", // Deep green for contrast
+    textAlign: "center",
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#4C9A2A",
     textAlign: "center",
     marginBottom: 20,
   },
-  button: {
-    backgroundColor: "#6a9c7f",
-    paddingVertical: 12,
-    paddingHorizontal: 25, // Adjusted for proper button size
+  card: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
     alignItems: "center",
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: "#2F6031",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 8,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    alignSelf: "center", // Prevents full-width stretch
+    marginVertical: 8,
   },
   buttonText: {
     color: "#fff",
@@ -146,10 +163,10 @@ const styles = StyleSheet.create({
     marginVertical: 15,
   },
   resultContainer: {
-    marginTop: 20,
-    backgroundColor: "#ffffff",
-    padding: 15,
-    borderRadius: 10,
+    marginTop: 10,
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 12,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
@@ -158,12 +175,12 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#2c3e50",
+    color: "#2F6031",
     textAlign: "center",
     marginBottom: 10,
   },
   resultCard: {
-    backgroundColor: "#ecf0f1",
+    backgroundColor: "#ECF0F1",
     padding: 10,
     borderRadius: 10,
     flexDirection: "row",
@@ -174,24 +191,23 @@ const styles = StyleSheet.create({
   resultLabel: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#34495e",
+    color: "#34495E",
   },
   resultValue: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#27ae60",
+    color: "#27AE60",
   },
   suggestionsTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#2c3e50",
+    color: "#2F6031",
     marginTop: 15,
     marginBottom: 5,
   },
   suggestionText: {
     fontSize: 16,
-    color: "#7f8c8d",
+    color: "#4C9A2A",
     marginBottom: 3,
   },
 });
-
