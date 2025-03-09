@@ -20,20 +20,10 @@ export const getUserName = async (): Promise<string | null> => {
 };
 
 
-export const getEcoScore = async (): Promise<number | null> => {
-  try {
-    if (!auth.currentUser) throw new Error("User is not logged in");
+export async function getEcoScore() {
+  if (!auth.currentUser) return 0;
 
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    const docSnap = await getDoc(userRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data().ecoScore || 0;
-    }
-
-    return null;
-  } catch (error: any) {
-    console.error("❌ Error fetching EcoScore:", error.message);
-    return null;
-  }
+  const userRef = doc(db, "users", auth.currentUser.uid);
+  const userDoc = await getDoc(userRef);
+  return userDoc.exists() ? userDoc.data().ecoScore : 0;
 };

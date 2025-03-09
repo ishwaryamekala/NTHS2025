@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
-import { logout } from "../authService";
-import { getUserName, getEcoScore } from "../ecoService";
-import {auth} from "../firebaseConfig";
-import {
-  ScrollView,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { getUserName } from "../ecoService";
+import { auth, db } from "../firebaseConfig";
+import { doc, onSnapshot } from "firebase/firestore"; // Import real-time listener
+import { AnimatedCircularProgress } from "react-native-circular-progress";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import styles from './styles';
 
 export default function HomeScreen({ navigation }: any) {
@@ -17,22 +12,26 @@ export default function HomeScreen({ navigation }: any) {
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchEcoScore() {
-      const score = await getEcoScore();
-      setEcoScore(score);
-      console.log("EcoScore:", score);
+    async function fetchUserName() {
+      const name = await getUserName();
+      setUserName(name);
     }
-    fetchEcoScore();
+    fetchUserName();
   }, []);
 
   useEffect(() => {
-    async function fetchUserName() {
-      const name = await getUserName();
-        setUserName(name);
-        console.log("User Name:", name);
-    }
-    fetchUserName();
-}, []);
+    if (!auth.currentUser) return;
+
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    
+    const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        setEcoScore(docSnapshot.data().ecoScore || 0);
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, []);
 
   console.log("Successfully navigated to Home Screen!");
   console.log("User ID (auth.uid):", auth.currentUser?.uid);
@@ -87,20 +86,23 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionGrid}>
           <TouchableOpacity style={styles.actionButton}>
-            <Icon name="qrcode-scan" size={30} color="#2ecc71" />
-            <Text style={styles.actionText}>Scan Item</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Icon name="file-document" size={30} color="#2ecc71" />
-            <Text style={styles.actionText}>Add Bill</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
             <Icon name="recycle" size={30} color="#2ecc71" />
-            <Text style={styles.actionText}>Disposal Guide</Text>
+            <Text style={styles.actionText}>Recycle</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => navigation.navigate("UtilityBill")}
+          >
+            <Icon name="file-document" size={30} color="#2ecc71" />
+            <Text style={styles.actionText}>Add Utility Bill</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Icon name="qrcode-scan" size={30} color="#2ecc71" />
+            <Text style={styles.actionText}>Chat with EcoBot!</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton}>
             <Icon name="store" size={30} color="#2ecc71" />
-            <Text style={styles.actionText}>Resell Item</Text>
+            <Text style={styles.actionText}>Resell Items</Text>
           </TouchableOpacity>
         </View>
       </View>
